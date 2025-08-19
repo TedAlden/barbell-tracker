@@ -48,6 +48,14 @@ class BarbellTracker:
         # Reset video to beginning
         cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
         
+        frame_width = frame.shape[1]
+        frame_height = frame.shape[0]
+        window_width = int(800 * frame_width / frame_height)
+        window_height = 800
+
+        cv2.namedWindow("Barbell Tracking", cv2.WINDOW_NORMAL)
+        cv2.resizeWindow("Barbell Tracking", window_width, window_height)
+
         # Tracking loop using template matching
         frame_count = 0
         while cap.isOpened():
@@ -97,8 +105,13 @@ class BarbellTracker:
         return positions, timestamps
 
     def get_template_selection(self, frame):
+        frame_width = frame.shape[1]
+        frame_height = frame.shape[0]
+        window_width = int(800 * frame_width / frame_height)
+        window_height = 800
+
         cv2.namedWindow("Select Barbell Plate", cv2.WINDOW_NORMAL)
-        cv2.resizeWindow("Select Barbell Plate", 800, 600)
+        cv2.resizeWindow("Select Barbell Plate", window_width, window_height)
         
         selection = None
         drawing = False
