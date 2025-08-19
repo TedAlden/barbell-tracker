@@ -10,7 +10,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from barbell_tracker import BarbellTracker
 
 
-class BarbellAnalyzerGUI:
+class BarbellGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Barbell Velocity Analyzer")
@@ -214,11 +214,3 @@ class BarbellAnalyzerGUI:
         results_text += f"{'='*50}\n"
 
         self.results_text.insert(1.0, results_text)
-
-def main():
-    root = tk.Tk()
-    app = BarbellAnalyzerGUI(root)
-    root.mainloop()
-
-if __name__ == "__main__":
-    main()
