@@ -16,7 +16,7 @@ class BarbellAnalyzerGUI:
         self.root.title("Barbell Velocity Analyzer")
         self.root.geometry("800x600")
         
-        self.analyzer = BarbellTracker()
+        self.tracker = BarbellTracker()
         self.video_path = None
         self.results = {}
         
@@ -80,7 +80,7 @@ class BarbellAnalyzerGUI:
         progress_label = ttk.Label(main_frame, textvariable=self.progress_var)
         progress_label.grid(row=4, column=0, columnspan=3, pady=(10, 0))
         
-        self.progress_bar = ttk.Progressbar(main_frame, mode='indeterminate')
+        self.progress_bar = ttk.Progressbar(main_frame, mode='determinate')
         self.progress_bar.grid(row=5, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(5, 0))
         
         # Results frame
@@ -120,14 +120,16 @@ class BarbellAnalyzerGUI:
             return
             
         # Disable buttons during analysis
+        self.progress_bar.config(value=0)
         self.analyze_btn.config(state="disabled")
-        self.progress_bar.start()
         self.progress_var.set("Loading video...")
         
         # Start analysis in separate thread
         thread = threading.Thread(target=self.analyze_video)
         thread.daemon = True
         thread.start()
+
+        self.sync_progress_bar(thread)
         
     def analyze_video(self):
         try:
@@ -152,7 +154,14 @@ class BarbellAnalyzerGUI:
             self.root.after(0, lambda: self.analysis_complete(results))
 
         except Exception as e:
-            self.root.after(0, lambda: self.analysis_error(str(e)))
+            self.root.after(0, lambda err=str(e): self.analysis_error(err))
+
+    def sync_progress_bar(self, thread):    
+        self.progress_bar.config(value=self.tracker.current_frame)
+        self.progress_bar.config(maximum=self.tracker.num_frames)
+
+        if thread.is_alive():
+            self.root.after(100, lambda: self.sync_progress_bar(thread))
 
     def analyse_raw_data(self, positions, timestamps):
         velocities = []
@@ -178,7 +187,6 @@ class BarbellAnalyzerGUI:
         return results
 
     def analysis_complete(self, results):
-        self.progress_bar.stop()
         self.progress_var.set("Analysis complete!")
         
         # Re-enable buttons
@@ -188,7 +196,6 @@ class BarbellAnalyzerGUI:
         self.display_results(results)
         
     def analysis_error(self, error_msg):
-        self.progress_bar.stop()
         self.progress_var.set("Analysis failed!")
         self.analyze_btn.config(state="normal")
         messagebox.showerror("Analysis Error", f"Error during analysis: {error_msg}")

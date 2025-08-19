@@ -12,6 +12,7 @@ class BarbellTracker:
         self.timestamps = []
         self.fps = 0
         self.num_frames = 0
+        self.current_frame = 0
 
     def track(self, video_path):
         cap = cv2.VideoCapture(video_path)
@@ -57,13 +58,13 @@ class BarbellTracker:
         cv2.resizeWindow("Barbell Tracking", window_width, window_height)
 
         # Tracking loop using template matching
-        frame_count = 0
+        self.current_frame = 0
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
                 break
             
-            frame_count += 1
+            self.current_frame += 1
             
             # Use template matching to find the barbell
             result = cv2.matchTemplate(frame, self.template, cv2.TM_CCOEFF_NORMED)
@@ -92,7 +93,7 @@ class BarbellTracker:
                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
             
             # Display frame number
-            cv2.putText(frame, f"Frame: {frame_count}/{self.num_frames}", (10, 60), 
+            cv2.putText(frame, f"Frame: {self.current_frame}/{self.num_frames}", (10, 60), 
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
             
             cv2.imshow("Barbell Tracking", frame)
