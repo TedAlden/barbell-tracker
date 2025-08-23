@@ -2,7 +2,11 @@ import cv2
 import numpy as np
 
 class BarbellTracker:
-    def __init__(self):
+    def __init__(self, show_preview=True, sample_interval=1, show_bar_path=False):
+        self.show_preview = show_preview
+        self.sample_interval = sample_interval
+        self.show_bar_path = show_bar_path
+
         self.template = None
         self.template_region = None
         self.pixels_per_meter = None
@@ -54,8 +58,9 @@ class BarbellTracker:
         window_width = int(800 * frame_width / frame_height)
         window_height = 800
 
-        cv2.namedWindow("Barbell Tracking", cv2.WINDOW_NORMAL)
-        cv2.resizeWindow("Barbell Tracking", window_width, window_height)
+        if self.show_preview:
+            cv2.namedWindow("Barbell Tracking", cv2.WINDOW_NORMAL)
+            cv2.resizeWindow("Barbell Tracking", window_width, window_height)
 
         # Tracking loop using template matching
         self.current_frame = 0
@@ -63,6 +68,10 @@ class BarbellTracker:
             ret, frame = cap.read()
             if not ret:
                 break
+
+            if self.current_frame % self.sample_interval != 0:
+                self.current_frame += 1
+                continue
             
             self.current_frame += 1
             
@@ -77,13 +86,20 @@ class BarbellTracker:
                 cy = max_loc[1] + h // 2
                 
                 # Draw box and center
-                cv2.rectangle(frame, max_loc, (max_loc[0] + w, max_loc[1] + h), (0, 255, 0), 2)
-                cv2.circle(frame, (cx, cy), 5, (0, 0, 255), -1)
+                cv2.rectangle(frame, max_loc, (max_loc[0] + w, max_loc[1] + h), (0, 255, 0), 5)
+                cv2.circle(frame, (cx, cy), 10, (0, 0, 255), -1)
                 
                 # Save position and timestamp
                 positions.append((cx, cy))
                 timestamps.append(cap.get(cv2.CAP_PROP_POS_MSEC) / 1000.0)  # seconds
-                
+
+                if self.show_bar_path:
+                    if len(positions) > 1:
+                        for i in range(1, len(positions)):
+                            pt1 = (int(positions[i-1][0]), int(positions[i-1][1]))
+                            pt2 = (int(positions[i][0]), int(positions[i][1]))
+                            cv2.line(frame, pt1, pt2, (255, 0, 255), 2)
+
                 # Display match confidence
                 cv2.putText(frame, f"Match: {max_val:.2f}", (10, 30), 
                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
@@ -95,8 +111,10 @@ class BarbellTracker:
             # Display frame number
             cv2.putText(frame, f"Frame: {self.current_frame}/{self.num_frames}", (10, 60), 
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-            
-            cv2.imshow("Barbell Tracking", frame)
+
+            if self.show_preview:
+                cv2.imshow("Barbell Tracking", frame)
+
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
         

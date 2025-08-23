@@ -56,17 +56,25 @@ class BarbellGUI:
         self.barbell_height_var = tk.StringVar(value="0.45")
         ttk.Label(settings_frame, text="Barbell Height (meters):").grid(row=0, column=0, sticky=tk.W)
         height_entry = ttk.Entry(settings_frame, textvariable=self.barbell_height_var, width=10)
-        height_entry.grid(row=0, column=1, padx=(10, 10))
+        height_entry.grid(row=0, column=1, padx=(10, 0))
         
         self.match_threshold_var = tk.StringVar(value="0.3")
         ttk.Label(settings_frame, text="Match Threshold:").grid(row=1, column=0, sticky=tk.W)
         threshold_entry = ttk.Entry(settings_frame, textvariable=self.match_threshold_var, width=10)
         threshold_entry.grid(row=1, column=1, padx=(10, 0))
         
-        # TODO
-        # self.show_preview_var = tk.BooleanVar(value=True)
-        # preview_check = ttk.Checkbutton(settings_frame, text="Show Preview During Analysis", variable=self.show_preview_var)
-        # preview_check.grid(row=2, column=0, sticky=tk.W)
+        self.sample_interval_var = tk.IntVar(value=1)
+        ttk.Label(settings_frame, text="Sample interval (frames):").grid(row=2, column=0, sticky=tk.W)
+        sample_interval_entry = ttk.Entry(settings_frame, textvariable=self.sample_interval_var, width=10)
+        sample_interval_entry.grid(row=2, column=1, padx=(10, 0))
+
+        self.show_preview_var = tk.BooleanVar(value=True)
+        preview_check = ttk.Checkbutton(settings_frame, text="Show Preview", variable=self.show_preview_var)
+        preview_check.grid(row=3, column=0, sticky=tk.W)
+
+        self.show_bar_path_var = tk.BooleanVar(value=True)
+        preview_check = ttk.Checkbutton(settings_frame, text="Trace Bar Path", variable=self.show_bar_path_var)
+        preview_check.grid(row=4, column=0, sticky=tk.W)
         
         # Control buttons
         control_frame = ttk.Frame(main_frame)
@@ -133,7 +141,11 @@ class BarbellGUI:
         
     def analyze_video(self):
         try:
-            self.tracker = BarbellTracker()
+            self.tracker = BarbellTracker(
+                show_preview=self.show_preview_var.get(),
+                sample_interval=self.sample_interval_var.get(),
+                show_bar_path=self.show_bar_path_var.get()
+            )
             self.root.after(0, lambda: self.progress_var.set("Loading video..."))
             
             # Configure tracker
