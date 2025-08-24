@@ -161,8 +161,23 @@ class BarbellGUI:
             self.analyser.plot_velocity()
     
     def btn_export_click(self):
-        # TODO: export CSV file frame_number,timestamp,x_pos,y_pos
-        pass
+        if self.analyser is None:
+            return messagebox.showerror("Error", "No analysis data available to export.")
+
+        filetypes = [
+            ("CSV files", "*.csv"),
+            ("All files", "*.*")
+        ]
+        save_path = filedialog.asksaveasfilename(
+            title="Export CSV",
+            initialfile="barbell_data.csv",
+            filetypes=filetypes
+        )
+        if save_path:
+            data = self.analyser.export_to_tuple()
+            with open(save_path, "w") as f:
+                for line in data:
+                    f.write(",".join(map(str, line)) + "\n")
 
     def analyze_video(self):
         try:
@@ -192,6 +207,7 @@ class BarbellGUI:
         self.progress_var.set("Analysing video...")
         self.analyze_btn.config(state="disabled")
         self.plot_btn.config(state="disabled")
+        self.export_btn.config(state="disabled")
         self.progress_bar.config(value=0)
         self.results_text.delete(1.0, tk.END)
 
@@ -199,6 +215,7 @@ class BarbellGUI:
         self.progress_var.set("Analysis complete!")
         self.analyze_btn.config(state="normal")
         self.plot_btn.config(state="normal")
+        self.export_btn.config(state="normal")
 
         # Analyse position data
         results_string = ""
@@ -223,6 +240,7 @@ class BarbellGUI:
         self.progress_var.set("Analysis failed!")
         self.analyze_btn.config(state="normal")
         self.plot_btn.config(state="normal")
+        self.export_btn.config(state="normal")
         messagebox.showerror("Analysis Error", f"Error during analysis: {error_msg}")
 
     def convert_position_px_to_m(self, position_px):

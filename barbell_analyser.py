@@ -136,3 +136,10 @@ class BarbellAnalyser:
 
         plt.tight_layout()
         plt.show()
+    
+    def export_to_tuple(self):
+        data = [("frame_number", "timestamp", "x_pos", "y_pos")]
+        for i, (t, (x, y)) in enumerate(zip(self.timestamps, self.displacements)):
+            data.append((i, t, x, y))
+
+        return tuple(data)
