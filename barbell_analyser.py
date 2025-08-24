@@ -10,46 +10,50 @@ import matplotlib.pyplot as plt
 
 class BarbellAnalyser:
     def __init__(self, positions, timestamps, num_frames):
-        self.positions_xy_raw = positions
+        self.positions = positions
         self.timestamps = timestamps
         self.num_frames = num_frames
 
-        self.positions_xy_normalised = []
-        self.positions_y_smoothed = []
-        self.velocities = []
-        self.accelerations = []
+        self.displacements = []
+        self.velocities = []  # only Y-velocities
+        self.accelerations = []  # only Y-accelerations
 
-    def preprocess_data(self):
+    def calculate_displacements(self):
         # Normalise starting y position and flip y coordinates
-        start_height = self.positions_xy_raw[0][1]
-        self.positions_xy_normalised = [
+        start_height = self.positions[0][1]
+        positions_height_normalised = [
             (position[0], -(position[1] - start_height))
-            for position in self.positions_xy_raw
+            for position in self.positions
         ]
 
-        # Use savgol filter to smooth y position
-        positions_y = np.array([p[1] for p in self.positions_xy_normalised])
-        self.positions_y_smoothed = scipy.signal.savgol_filter(positions_y, window_length=15, polyorder=3)
+        # Use savgol filter to smooth x and y positions
+        displacements_x = np.array([p[0] for p in positions_height_normalised])
+        displacements_y = np.array([p[1] for p in positions_height_normalised])
+
+        displacements_x_smoothed = scipy.signal.savgol_filter(displacements_x, window_length=15, polyorder=3)
+        displacements_y_smoothed = scipy.signal.savgol_filter(displacements_y, window_length=15, polyorder=3)
+
+        self.displacements = np.array(list(zip(displacements_x_smoothed, displacements_y_smoothed)))
 
     def calculate_velocities(self):
-        # Use second-order central differences to calculate velocity
-        self.velocities = list(np.gradient(self.positions_y_smoothed, self.timestamps))
+        displacements_y = np.array([d[1] for d in self.displacements])
+        self.velocities = list(np.gradient(displacements_y, self.timestamps))
 
     def calculate_accelerations(self):
-        # Use second-order central differences to calculate velocity
         self.accelerations = list(np.gradient(self.velocities, self.timestamps))
 
     def get_results(self):
-        self.preprocess_data()
+        self.calculate_displacements()
         self.calculate_velocities()
         self.calculate_accelerations()
+
         results = {}
         results['peak_velocity'] = max(self.velocities) if self.velocities else 0
         results['avg_velocity'] = np.mean(self.velocities) if self.velocities else 0
         results['min_velocity'] = min(self.velocities) if self.velocities else 0
         results['std_velocity'] = np.std(self.velocities) if self.velocities else 0
-        results['total_points'] = len(self.positions_xy_raw)
-        results['success_rate'] = len(self.positions_xy_raw) / self.num_frames if self.num_frames > 0 else 0
+        results['total_points'] = len(self.displacements)
+        results['success_rate'] = len(self.displacements) / self.num_frames if self.num_frames > 0 else 0
 
         return results
 
@@ -72,8 +76,10 @@ class BarbellAnalyser:
         plt.figure(figsize=(9, 6))
 
         # Plot displacement-time
+        displacements_y = np.array([d[1] for d in self.displacements])
+
         plt.subplot(2, 2, 1)
-        plt.plot(self.timestamps, self.positions_y_smoothed)
+        plt.plot(self.timestamps, displacements_y)
         plt.xlabel("Time (s)")
         plt.ylabel("Barbell Vertical Displacement (m)")
         plt.title("Barbell Vertical Displacement Over Time")
@@ -96,10 +102,10 @@ class BarbellAnalyser:
         plt.grid()
 
         # Plot bar path
-        xs = [pos[0] for pos in self.positions_xy_normalised]
-        ys = [pos[1] for pos in self.positions_xy_normalised]
-        start_pos = self.positions_xy_normalised[0]
-        end_pos = self.positions_xy_normalised[-1]
+        xs = [pos[0] for pos in self.displacements]
+        ys = [pos[1] for pos in self.displacements]
+        start_pos = self.displacements[0]
+        end_pos = self.displacements[-1]
 
         plt.subplot(2, 2, 4)
         plt.plot(xs, ys)

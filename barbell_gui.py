@@ -167,6 +167,7 @@ class BarbellGUI:
         self.analyze_btn.config(state="disabled")
         self.plot_btn.config(state="disabled")
         self.progress_bar.config(value=0)
+        self.results_text.delete(1.0, tk.END)
 
     def on_analysis_complete(self, positions, timestamps):
         self.progress_var.set("Analysis complete!")
@@ -174,16 +175,16 @@ class BarbellGUI:
         self.plot_btn.config(state="normal")
 
         # Analyse position data
+        results_string = ""
         try:
             positions_m = [self.convert_position_px_to_m(pos) for pos in positions]
             self.analyser = BarbellAnalyser(positions_m, timestamps, self.tracker.num_frames)
             results_string = self.analyser.get_results_string()
+
+            # Display results
+            self.results_text.insert(1.0, results_string)
         except Exception as e:
             self.on_analysis_error(str(e))
-
-        # Display results
-        self.results_text.delete(1.0, tk.END)
-        self.results_text.insert(1.0, results_string)
 
     def on_analysis_error(self, error_msg):
         self.progress_var.set("Analysis failed!")
