@@ -9,7 +9,18 @@ import matplotlib.pyplot as plt
 
 
 class BarbellAnalyser:
-    def __init__(self, positions, timestamps, num_frames):
+    def __init__(
+            self,
+            positions,
+            timestamps,
+            num_frames,
+            smooth_data=True,
+            smooth_window_length=15,
+            smooth_polynomial_order=3):
+        self.smooth_data = smooth_data
+        self.smooth_window_length = smooth_window_length
+        self.smooth_polynomial_order = smooth_polynomial_order
+
         self.positions = positions
         self.timestamps = timestamps
         self.num_frames = num_frames
@@ -17,6 +28,14 @@ class BarbellAnalyser:
         self.displacements = []
         self.velocities = []  # only Y-velocities
         self.accelerations = []  # only Y-accelerations
+
+    def smooth_1d(self, data):
+        if self.smooth_data:
+            return scipy.signal.savgol_filter(
+                data,
+                window_length=self.smooth_window_length,
+                polyorder=self.smooth_polynomial_order
+            )
 
     def calculate_displacements(self):
         # Normalise starting y position and flip y coordinates
@@ -26,12 +45,11 @@ class BarbellAnalyser:
             for position in self.positions
         ]
 
-        # Use savgol filter to smooth x and y positions
         displacements_x = np.array([p[0] for p in positions_height_normalised])
         displacements_y = np.array([p[1] for p in positions_height_normalised])
 
-        displacements_x_smoothed = scipy.signal.savgol_filter(displacements_x, window_length=15, polyorder=3)
-        displacements_y_smoothed = scipy.signal.savgol_filter(displacements_y, window_length=15, polyorder=3)
+        displacements_x_smoothed = self.smooth_1d(displacements_x)
+        displacements_y_smoothed = self.smooth_1d(displacements_y)
 
         self.displacements = np.array(list(zip(displacements_x_smoothed, displacements_y_smoothed)))
 

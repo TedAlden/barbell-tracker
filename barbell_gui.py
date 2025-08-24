@@ -29,16 +29,17 @@ class BarbellGUI:
 
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
-        main_frame.columnconfigure(1, weight=1)
-        main_frame.rowconfigure(2, weight=1)
+        main_frame.columnconfigure(0, weight=1, uniform="half")
+        main_frame.columnconfigure(1, weight=1, uniform="half")
+        main_frame.rowconfigure(6, weight=1)
 
         # Title
         title_label = ttk.Label(main_frame, text="Barbell Velocity Analyzer", font=("Arial", 16, "bold"))
-        title_label.grid(row=0, column=0, columnspan=3, pady=(0, 20))
+        title_label.grid(row=0, column=0, columnspan=2, pady=(0, 20))
 
         # File selection frame
         file_frame = ttk.LabelFrame(main_frame, text="Video File", padding="10")
-        file_frame.grid(row=1, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(0, 10))
+        file_frame.grid(row=1, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 10))
         file_frame.columnconfigure(1, weight=1)
 
         self.file_var = tk.StringVar()
@@ -49,54 +50,75 @@ class BarbellGUI:
         browse_btn = ttk.Button(file_frame, text="Browse", command=self.btn_browse_click)
         browse_btn.grid(row=0, column=2)
 
-        # Analysis settings
-        settings_frame = ttk.LabelFrame(main_frame, text="Analysis Settings", padding="10")
-        settings_frame.grid(row=2, column=0, columnspan=3, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(0, 10))
+        # Tracker settings
+        tracker_settings_frame = ttk.LabelFrame(main_frame, text="Tracker Settings", padding="10")
+        tracker_settings_frame.grid(row=2, column=0, sticky="NSEW", padx=(0, 5), pady=(0, 10))
 
         self.barbell_height_var = tk.StringVar(value="0.45")
-        ttk.Label(settings_frame, text="Barbell Height (meters):").grid(row=0, column=0, sticky=tk.W)
-        height_entry = ttk.Entry(settings_frame, textvariable=self.barbell_height_var, width=10)
-        height_entry.grid(row=0, column=1, padx=(10, 0))
+        ttk.Label(tracker_settings_frame, text="Barbell Height (meters):").grid(row=0, column=0, sticky="NSEW")
+        height_entry = ttk.Entry(tracker_settings_frame, textvariable=self.barbell_height_var, width=10)
+        height_entry.grid(row=0, column=1, sticky="NSEW", padx=(10, 0))
 
         self.match_threshold_var = tk.StringVar(value="0.3")
-        ttk.Label(settings_frame, text="Match Threshold:").grid(row=1, column=0, sticky=tk.W)
-        threshold_entry = ttk.Entry(settings_frame, textvariable=self.match_threshold_var, width=10)
+        ttk.Label(tracker_settings_frame, text="Match Threshold:").grid(row=1, column=0, sticky="NSEW")
+        threshold_entry = ttk.Entry(tracker_settings_frame, textvariable=self.match_threshold_var, width=10)
         threshold_entry.grid(row=1, column=1, padx=(10, 0))
 
         self.sample_interval_var = tk.IntVar(value=1)
-        ttk.Label(settings_frame, text="Sample interval (frames):").grid(row=2, column=0, sticky=tk.W)
-        sample_interval_entry = ttk.Entry(settings_frame, textvariable=self.sample_interval_var, width=10)
+        ttk.Label(tracker_settings_frame, text="Sample Interval (frames):").grid(row=2, column=0, sticky="NSEW")
+        sample_interval_entry = ttk.Entry(tracker_settings_frame, textvariable=self.sample_interval_var, width=10)
         sample_interval_entry.grid(row=2, column=1, padx=(10, 0))
 
         self.show_preview_var = tk.BooleanVar(value=True)
-        preview_check = ttk.Checkbutton(settings_frame, text="Show Preview", variable=self.show_preview_var)
-        preview_check.grid(row=3, column=0, sticky=tk.W)
+        preview_check = ttk.Checkbutton(tracker_settings_frame, text="Show Preview", variable=self.show_preview_var)
+        preview_check.grid(row=3, column=0, sticky="NSEW")
 
         self.show_bar_path_var = tk.BooleanVar(value=True)
-        preview_check = ttk.Checkbutton(settings_frame, text="Trace Bar Path", variable=self.show_bar_path_var)
-        preview_check.grid(row=4, column=0, sticky=tk.W)
+        preview_check = ttk.Checkbutton(tracker_settings_frame, text="Trace Bar Path", variable=self.show_bar_path_var)
+        preview_check.grid(row=4, column=0, sticky="NSEW")
+
+        # Analyser settings
+        analyser_settings_frame = ttk.LabelFrame(main_frame, text="Analyser Settings", padding="10")
+        analyser_settings_frame.grid(row=2, column=1, sticky=(tk.W, tk.E, tk.N, tk.S), padx=(5, 0), pady=(0, 10))
+
+        self.smooth_data_var = tk.BooleanVar(value=True)
+        smooth_check = ttk.Checkbutton(analyser_settings_frame, text="Enable Smoothing", variable=self.smooth_data_var)
+        smooth_check.grid(row=0, column=0, sticky="NSEW")
+
+        self.smooth_window_length_var = tk.IntVar(value=15)
+        ttk.Label(analyser_settings_frame, text="Smoothing Window Length:").grid(row=1, column=0, sticky="NSEW")
+        smooth_window_length_entry = ttk.Entry(analyser_settings_frame, textvariable=self.smooth_window_length_var, width=10)
+        smooth_window_length_entry.grid(row=1, column=1, padx=(10, 0))
+
+        self.smooth_polynomial_order_var = tk.IntVar(value=3)
+        ttk.Label(analyser_settings_frame, text="Smoothing Polynomial Order:").grid(row=2, column=0, sticky="NSEW")
+        smooth_polynomial_order_entry = ttk.Entry(analyser_settings_frame, textvariable=self.smooth_polynomial_order_var, width=10)
+        smooth_polynomial_order_entry.grid(row=2, column=1, padx=(10, 0))
 
         # Control buttons
         control_frame = ttk.Frame(main_frame)
-        control_frame.grid(row=3, column=0, columnspan=3, pady=(10, 0))
+        control_frame.grid(row=3, column=0, columnspan=2, pady=(10, 0))
 
-        self.analyze_btn = ttk.Button(control_frame, text="Analyze Video", command=self.btn_analyse_click)
+        self.analyze_btn = ttk.Button(control_frame, text="Track Video", command=self.btn_analyse_click, padding=8)
         self.analyze_btn.grid(row=0, column=0)
 
-        self.plot_btn = ttk.Button(control_frame, text="Plot Velocity", command=self.btn_plot_click)
+        self.plot_btn = ttk.Button(control_frame, text="Plot Analysis", command=self.btn_plot_click, padding=8)
         self.plot_btn.grid(row=0, column=1)
+
+        self.export_btn = ttk.Button(control_frame, text="Export data", command=self.btn_export_click, padding=8)
+        self.export_btn.grid(row=0, column=2)
 
         # Progress bar
         self.progress_var = tk.StringVar(value="Ready")
         progress_label = ttk.Label(main_frame, textvariable=self.progress_var)
-        progress_label.grid(row=4, column=0, columnspan=3, pady=(10, 0))
+        progress_label.grid(row=4, column=0, columnspan=2, pady=(10, 0))
 
         self.progress_bar = ttk.Progressbar(main_frame, mode='determinate')
-        self.progress_bar.grid(row=5, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(5, 0))
+        self.progress_bar.grid(row=5, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(5, 0))
 
         # Results
         results_frame = ttk.LabelFrame(main_frame, text="Analysis Results", padding="10")
-        results_frame.grid(row=6, column=0, columnspan=3, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(10, 0))
+        results_frame.grid(row=6, column=0, columnspan=2, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(10, 0))
         results_frame.columnconfigure(0, weight=1)
         results_frame.rowconfigure(0, weight=1)
 
@@ -137,6 +159,10 @@ class BarbellGUI:
     def btn_plot_click(self):
         if self.analyser is not None:
             self.analyser.plot_velocity()
+    
+    def btn_export_click(self):
+        # TODO: export CSV file frame_number,timestamp,x_pos,y_pos
+        pass
 
     def analyze_video(self):
         try:
@@ -178,7 +204,14 @@ class BarbellGUI:
         results_string = ""
         try:
             positions_m = [self.convert_position_px_to_m(pos) for pos in positions]
-            self.analyser = BarbellAnalyser(positions_m, timestamps, self.tracker.num_frames)
+            self.analyser = BarbellAnalyser(
+                positions_m,
+                timestamps,
+                self.tracker.num_frames,
+                smooth_data=self.smooth_data_var.get(),
+                smooth_window_length=self.smooth_window_length_var.get(),
+                smooth_polynomial_order=self.smooth_polynomial_order_var.get()
+            )
             results_string = self.analyser.get_results_string()
 
             # Display results
