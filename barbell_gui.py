@@ -143,12 +143,10 @@ class BarbellGUI:
 
     def btn_analyse_click(self):
         if not self.file_var.get():
-            messagebox.showerror("Error", "Please select a video file first.")
-            return
+            return messagebox.showerror("Error", "Please select a video file first.")
 
         if not os.path.exists(self.file_var.get()):
-            messagebox.showerror("Error", "Selected video file does not exist.")
-            return
+            return messagebox.showerror("Error", "Selected video file does not exist.")
 
         # Start analysis in separate thread
         thread = threading.Thread(target=self.analyze_video)
@@ -158,7 +156,7 @@ class BarbellGUI:
     
     def btn_plot_click(self):
         if self.analyser is not None:
-            self.analyser.plot_velocity()
+            self.analyser.plot_data()
     
     def btn_export_click(self):
         if self.analyser is None:

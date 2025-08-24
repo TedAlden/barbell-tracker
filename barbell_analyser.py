@@ -90,7 +90,7 @@ class BarbellAnalyser:
 
         return results_string
 
-    def plot_velocity(self):
+    def plot_data(self):
         plt.figure(figsize=(9, 6))
 
         # Plot displacement-time
