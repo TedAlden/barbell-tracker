@@ -14,10 +14,14 @@ class BarbellAnalyser:
             positions,
             timestamps,
             num_frames,
-            smooth_data=True,
+            smooth_displacement=True,
+            smooth_velocity=True,
+            smooth_acceleration=True,
             smooth_window_length=15,
             smooth_polynomial_order=3):
-        self.smooth_data = smooth_data
+        self.smooth_displacement = smooth_displacement
+        self.smooth_velocity = smooth_velocity
+        self.smooth_acceleration = smooth_acceleration
         self.smooth_window_length = smooth_window_length
         self.smooth_polynomial_order = smooth_polynomial_order
 
@@ -30,12 +34,11 @@ class BarbellAnalyser:
         self.accelerations = []  # only Y-accelerations
 
     def smooth_1d(self, data):
-        if self.smooth_data:
-            return scipy.signal.savgol_filter(
-                data,
-                window_length=self.smooth_window_length,
-                polyorder=self.smooth_polynomial_order
-            )
+        return scipy.signal.savgol_filter(
+            data,
+            window_length=self.smooth_window_length,
+            polyorder=self.smooth_polynomial_order
+        )
 
     def calculate_displacements(self):
         # Normalise starting y position and flip y coordinates
@@ -48,17 +51,29 @@ class BarbellAnalyser:
         displacements_x = np.array([p[0] for p in positions_height_normalised])
         displacements_y = np.array([p[1] for p in positions_height_normalised])
 
-        displacements_x_smoothed = self.smooth_1d(displacements_x)
-        displacements_y_smoothed = self.smooth_1d(displacements_y)
-
-        self.displacements = np.array(list(zip(displacements_x_smoothed, displacements_y_smoothed)))
+        if self.smooth_displacement:
+            displacements_x_smoothed = self.smooth_1d(displacements_x)
+            displacements_y_smoothed = self.smooth_1d(displacements_y)
+            self.displacements = np.array(zip(displacements_x_smoothed, displacements_y_smoothed))
+        else:
+            self.displacements = np.array(zip(displacements_x, displacements_y))
 
     def calculate_velocities(self):
         displacements_y = np.array([d[1] for d in self.displacements])
-        self.velocities = list(np.gradient(displacements_y, self.timestamps))
+        velocities_y = list(np.gradient(displacements_y, self.timestamps))
+
+        if self.smooth_velocity:
+            self.velocities = self.smooth_1d(velocities_y)
+        else:
+            self.velocities = velocities_y
 
     def calculate_accelerations(self):
-        self.accelerations = list(np.gradient(self.velocities, self.timestamps))
+        accelerations_y = list(np.gradient(self.velocities, self.timestamps))
+
+        if self.smooth_acceleration:
+            self.accelerations = self.smooth_1d(accelerations_y)
+        else:
+            self.accelerations = accelerations_y
 
     def get_results(self):
         self.calculate_displacements()

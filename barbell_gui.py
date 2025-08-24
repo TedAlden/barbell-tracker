@@ -55,7 +55,7 @@ class BarbellGUI:
         tracker_settings_frame.grid(row=2, column=0, sticky="NSEW", padx=(0, 5), pady=(0, 10))
 
         self.barbell_height_var = tk.StringVar(value="0.45")
-        ttk.Label(tracker_settings_frame, text="Barbell Height (meters):").grid(row=0, column=0, sticky="NSEW")
+        ttk.Label(tracker_settings_frame, text="Barbell Plate Height (meters):").grid(row=0, column=0, sticky="NSEW")
         height_entry = ttk.Entry(tracker_settings_frame, textvariable=self.barbell_height_var, width=10)
         height_entry.grid(row=0, column=1, sticky="NSEW", padx=(10, 0))
 
@@ -81,19 +81,27 @@ class BarbellGUI:
         analyser_settings_frame = ttk.LabelFrame(main_frame, text="Analyser Settings", padding="10")
         analyser_settings_frame.grid(row=2, column=1, sticky=(tk.W, tk.E, tk.N, tk.S), padx=(5, 0), pady=(0, 10))
 
-        self.smooth_data_var = tk.BooleanVar(value=True)
-        smooth_check = ttk.Checkbutton(analyser_settings_frame, text="Enable Smoothing", variable=self.smooth_data_var)
-        smooth_check.grid(row=0, column=0, sticky="NSEW")
+        self.smooth_displacement_var = tk.BooleanVar(value=True)
+        smooth_displacement_check = ttk.Checkbutton(analyser_settings_frame, text="Smoothing Displacement", variable=self.smooth_displacement_var)
+        smooth_displacement_check.grid(row=0, column=0, sticky="NSEW")
+
+        self.smooth_velocity_var = tk.BooleanVar(value=True)
+        smooth_velocity_check = ttk.Checkbutton(analyser_settings_frame, text="Smoothing Velocity", variable=self.smooth_velocity_var)
+        smooth_velocity_check.grid(row=1, column=0, sticky="NSEW")
+
+        self.smooth_acceleration_var = tk.BooleanVar(value=True)
+        smooth_acceleration_check = ttk.Checkbutton(analyser_settings_frame, text="Smoothing Acceleration", variable=self.smooth_acceleration_var)
+        smooth_acceleration_check.grid(row=2, column=0, sticky="NSEW")
 
         self.smooth_window_length_var = tk.IntVar(value=15)
-        ttk.Label(analyser_settings_frame, text="Smoothing Window Length:").grid(row=1, column=0, sticky="NSEW")
+        ttk.Label(analyser_settings_frame, text="Smoothing Window Length:").grid(row=3, column=0, sticky="NSEW")
         smooth_window_length_entry = ttk.Entry(analyser_settings_frame, textvariable=self.smooth_window_length_var, width=10)
-        smooth_window_length_entry.grid(row=1, column=1, padx=(10, 0))
+        smooth_window_length_entry.grid(row=3, column=1, padx=(10, 0))
 
         self.smooth_polynomial_order_var = tk.IntVar(value=3)
-        ttk.Label(analyser_settings_frame, text="Smoothing Polynomial Order:").grid(row=2, column=0, sticky="NSEW")
+        ttk.Label(analyser_settings_frame, text="Smoothing Polynomial Order:").grid(row=4, column=0, sticky="NSEW")
         smooth_polynomial_order_entry = ttk.Entry(analyser_settings_frame, textvariable=self.smooth_polynomial_order_var, width=10)
-        smooth_polynomial_order_entry.grid(row=2, column=1, padx=(10, 0))
+        smooth_polynomial_order_entry.grid(row=4, column=1, padx=(10, 0))
 
         # Control buttons
         control_frame = ttk.Frame(main_frame)
@@ -223,7 +231,9 @@ class BarbellGUI:
                 positions_m,
                 timestamps,
                 self.tracker.num_frames,
-                smooth_data=self.smooth_data_var.get(),
+                smooth_displacement=self.smooth_displacement_var.get(),
+                smooth_velocity=self.smooth_velocity_var.get(),
+                smooth_acceleration=self.smooth_acceleration_var.get(),
                 smooth_window_length=self.smooth_window_length_var.get(),
                 smooth_polynomial_order=self.smooth_polynomial_order_var.get()
             )
