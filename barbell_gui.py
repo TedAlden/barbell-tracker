@@ -19,6 +19,7 @@ class BarbellGUI:
         self.root.title("Barbell Velocity Analyzer")
         self.root.geometry("800x600")
         self.tracker = None
+        self.analyser = None
         self.setup_ui()
 
     def setup_ui(self):
@@ -80,7 +81,10 @@ class BarbellGUI:
         control_frame.grid(row=3, column=0, columnspan=3, pady=(10, 0))
 
         self.analyze_btn = ttk.Button(control_frame, text="Analyze Video", command=self.btn_analyse_click)
-        self.analyze_btn.grid(row=0, column=0, padx=(0, 10))
+        self.analyze_btn.grid(row=0, column=0)
+
+        self.plot_btn = ttk.Button(control_frame, text="Plot Velocity", command=self.btn_plot_click)
+        self.plot_btn.grid(row=0, column=1)
 
         # Progress bar
         self.progress_var = tk.StringVar(value="Ready")
@@ -129,6 +133,10 @@ class BarbellGUI:
         thread.daemon = True
         thread.start()
         self.sync_progress_bar(thread)
+    
+    def btn_plot_click(self):
+        if self.analyser is not None:
+            self.analyser.plot_velocity()
 
     def analyze_video(self):
         try:
@@ -157,16 +165,21 @@ class BarbellGUI:
     def on_analysis_start(self):
         self.progress_var.set("Analysing video...")
         self.analyze_btn.config(state="disabled")
+        self.plot_btn.config(state="disabled")
         self.progress_bar.config(value=0)
 
     def on_analysis_complete(self, positions, timestamps):
         self.progress_var.set("Analysis complete!")
         self.analyze_btn.config(state="normal")
+        self.plot_btn.config(state="normal")
 
         # Analyse position data
-        positions_m = [self.convert_position_px_to_m(pos) for pos in positions]
-        analyser = BarbellAnalyser(positions_m, timestamps, self.tracker.num_frames)
-        results_string = analyser.get_results_string()
+        try:
+            positions_m = [self.convert_position_px_to_m(pos) for pos in positions]
+            self.analyser = BarbellAnalyser(positions_m, timestamps, self.tracker.num_frames)
+            results_string = self.analyser.get_results_string()
+        except Exception as e:
+            self.on_analysis_error(str(e))
 
         # Display results
         self.results_text.delete(1.0, tk.END)
@@ -175,6 +188,7 @@ class BarbellGUI:
     def on_analysis_error(self, error_msg):
         self.progress_var.set("Analysis failed!")
         self.analyze_btn.config(state="normal")
+        self.plot_btn.config(state="normal")
         messagebox.showerror("Analysis Error", f"Error during analysis: {error_msg}")
 
     def convert_position_px_to_m(self, position_px):
