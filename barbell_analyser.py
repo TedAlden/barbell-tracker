@@ -54,9 +54,9 @@ class BarbellAnalyser:
         if self.smooth_displacement:
             displacements_x_smoothed = self.smooth_1d(displacements_x)
             displacements_y_smoothed = self.smooth_1d(displacements_y)
-            self.displacements = np.array(zip(displacements_x_smoothed, displacements_y_smoothed))
+            self.displacements = list(zip(displacements_x_smoothed, displacements_y_smoothed))
         else:
-            self.displacements = np.array(zip(displacements_x, displacements_y))
+            self.displacements = list(zip(displacements_x, displacements_y))
 
     def calculate_velocities(self):
         displacements_y = np.array([d[1] for d in self.displacements])
@@ -81,10 +81,10 @@ class BarbellAnalyser:
         self.calculate_accelerations()
 
         results = {}
-        results['peak_velocity'] = max(self.velocities) if self.velocities else 0
-        results['avg_velocity'] = np.mean(self.velocities) if self.velocities else 0
-        results['min_velocity'] = min(self.velocities) if self.velocities else 0
-        results['std_velocity'] = np.std(self.velocities) if self.velocities else 0
+        results['peak_velocity'] = max(self.velocities) if self.velocities.any() else 0
+        results['avg_velocity'] = np.mean(self.velocities) if self.velocities.any() else 0
+        results['min_velocity'] = min(self.velocities) if self.velocities.any() else 0
+        results['std_velocity'] = np.std(self.velocities) if self.velocities.any() else 0
         results['total_points'] = len(self.displacements)
         results['success_rate'] = len(self.displacements) / self.num_frames if self.num_frames > 0 else 0
 
