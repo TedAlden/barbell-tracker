@@ -144,14 +144,17 @@ class BarbellTracker:
         def mouse_callback(event, x, y, flags, param):
             nonlocal selection, drawing, start_point
 
+            img_copy = frame.copy()
+            # Draw grid lines at mouse position
+            cv2.line(img_copy, (x, 0), (x, img_copy.shape[0]), (200, 200, 200), 2)
+            cv2.line(img_copy, (0, y), (img_copy.shape[1], y), (200, 200, 200), 2)
+
             if event == cv2.EVENT_LBUTTONDOWN:
                 drawing = True
                 start_point = (x, y)
             elif event == cv2.EVENT_MOUSEMOVE:
                 if drawing:
-                    img_copy = frame.copy()
                     cv2.rectangle(img_copy, start_point, (x, y), (0, 255, 0), 2)
-                    cv2.imshow("Select Barbell Plate", img_copy)
             elif event == cv2.EVENT_LBUTTONUP:
                 drawing = False
                 end_point = (x, y)
@@ -161,7 +164,6 @@ class BarbellTracker:
                     abs(end_point[0] - start_point[0]),
                     abs(end_point[1] - start_point[1])
                 )
-                img_copy = frame.copy()
                 cv2.rectangle(
                     img_copy,
                     (selection[0], selection[1]),
@@ -169,7 +171,7 @@ class BarbellTracker:
                     (0, 255, 0),
                     2
                 )
-                cv2.imshow("Select Barbell Plate", img_copy)
+            cv2.imshow("Select Barbell Plate", img_copy)
 
         # Set mouse callback for selection
         cv2.setMouseCallback("Select Barbell Plate", mouse_callback)
